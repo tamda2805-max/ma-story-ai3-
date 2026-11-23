@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isActiveAdmin() {
+      return isSignedIn() &&
+        firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.active == true;
+    }
+
+    // Hình ảnh bìa & minh họa (JPG, PNG, WEBP <= 5MB)
+    match /images/{allPaths=**} {
+      allow read: if true;
+      allow write: if isActiveAdmin()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    // Tài liệu PDF học liệu & nguyên bản truyện (PDF <= 15MB)
+    match /pdfs/{allPaths=**} {
+      allow read: if true;
+      allow write: if isActiveAdmin()
+        && request.resource.size < 15 * 1024 * 1024
+        && request.resource.contentType == 'application/pdf';
+    }
+  }
+}

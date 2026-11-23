@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isActiveAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.active == true;
+    }
+
+    // Bảng phân quyền quản trị viên
+    match /adminUsers/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        resource.data.email == request.auth.token.email
+      );
+      allow write: if isActiveAdmin();
+    }
+
+    // Kho truyện kể dân tộc Mạ
+    match /stories/{storyId} {
+      allow read: if resource.data.status == 'published' || isActiveAdmin();
+      allow create, update, delete: if isActiveAdmin();
+    }
+
+    // Danh mục chủ đề
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isActiveAdmin();
+    }
+
+    // Bộ câu hỏi học tập tương tác
+    match /quizzes/{quizId} {
+      allow read: if resource.data.status == 'published' || isActiveAdmin();
+      allow write: if isActiveAdmin();
+    }
+
+    // Thư viện media (ảnh & PDF)
+    match /media/{mediaId} {
+      allow read: if true;
+      allow write: if isActiveAdmin();
+    }
+  }
+}
