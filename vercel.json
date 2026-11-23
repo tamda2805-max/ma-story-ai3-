@@ -1,30 +1,12 @@
 {
   "rewrites": [
-    {
-      "source": "/__/auth/:path*",
-      "destination": "https://REPLACE_WITH_YOUR_FIREBASE_PROJECT_ID.firebaseapp.com/__/auth/:path*"
-    },
-    {
-      "source": "/__/firebase/init.json",
-      "destination": "https://REPLACE_WITH_YOUR_FIREBASE_PROJECT_ID.firebaseapp.com/__/firebase/init.json"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin-allow-popups"
-        }
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" }
       ]
     }
   ]
